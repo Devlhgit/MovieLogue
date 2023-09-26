@@ -1,0 +1,27 @@
+# python 3.8 버전과 Debian buster를 기반으로 하는 기본 이미지를 설정합니다.
+FROM python:3.8-slim-buster
+
+# 컨테이너가 8501 포트에서 수신 대기하도록 설정합니다.
+EXPOSE 8501
+
+# 필요한 패키지를 설치합니다. 
+# build-essential: 컴파일러와 빌드 관련 도구를 설치
+# software-properties-common: 더 고급 패키지 관리 기능을 제공
+# git: Git 소스 코드 관리 도구
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    software-properties-common \
+    git \
+    && rm -rf /var/lib/apt/lists/*  # 패키지 목록 캐시를 삭제하여 이미지 크기를 줄입니다.
+
+# 작업 디렉토리를 /app로 설정합니다.
+WORKDIR /app
+
+# 호스트의 현재 디렉토리에 있는 모든 파일을 컨테이너의 /app 디렉토리에 복사합니다.
+COPY . /app
+
+# requirements.txt에 명시된 Python 패키지를 설치합니다.
+RUN pip3 install -r requirements.txt
+
+# 컨테이너가 시작될 때 실행될 명령어를 설정합니다. Streamlit 앱을 8501 포트와 0.0.0.0 주소에서 실행합니다.
+ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
